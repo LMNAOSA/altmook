@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Prohibition", sans-serif;
+  --font-sans: "Gelica", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-void: #030303;
+  --color-ash: #121212;
+  --color-carbon: #0A0A0A;
+  --color-optic-white: #FFFFFF;
+  --color-opal-cyan: #4FD1C5;
+  --color-matrix: #35312D;
+
+  /* MOOKA BOYS MINING CO. BRAND PALETTE */
+  --color-pit-black: #0A0908;
+  --color-iron: #241D19;
+  --color-red-dirt: #7A3F10;
+  --color-copper: #C25E22;
+  --color-ember: #E0873A;
+  --color-bone: #EDE7DD;
+}
+
+:root {
+  background-color: var(--color-pit-black);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  /* Subtle physical grain texture - Illuminated Grit */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-color: var(--color-pit-black);
+}
+
+/* Custom scrollbar - Minimalist */
+::-webkit-scrollbar {
+  width: 4px;
+  background: var(--color-pit-black); 
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-iron);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-copper);
+}
+
+/* Typography Utilities for Elite System */
+.text-micro {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+.text-display {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 9rem);
+  line-height: 0.9;
+  letter-spacing: 0.025em; /* 25 tracking */
+}
+
+/* PDF Typography Equivalents */
+.text-hudson {
+  font-family: var(--font-display);
+  line-height: 0.95;
+  letter-spacing: 0.025em;
+}
+
+.text-support {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-weight: 600;
+}
+
+/* Physical Imagery Handling */
+.cinematic-image {
+  mix-blend-mode: lighten;
+  filter: contrast(1.1) brightness(0.9);
+}
+.image-glow {
+  box-shadow: 0 0 120px -20px rgba(194, 94, 34, 0.08); /* Copper glow */
+}
