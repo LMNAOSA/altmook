@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { merch } from '../data/mockData';
 import { HeroHeadline } from '../components/ui/HeroHeadline';
+import { useCatalogue, useAcquire, formatPrice, type LiveProduct } from '../lib/shopify';
 
-function ProductDetail({ product, onClose }: { product: typeof merch[0], onClose: () => void }) {
+function ProductDetail({ product, live, loaded, onClose }: { product: typeof merch[0], live: LiveProduct | undefined, loaded: boolean, onClose: () => void }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  // Live price, stock and checkout from Shopify, when a product with this handle exists there
+  const buy = useAcquire(live, loaded, 'Acquire Artifact');
+  const price = buy.price ?? product.price;
 
   // Lock body scroll
   useEffect(() => {
@@ -86,7 +90,7 @@ function ProductDetail({ product, onClose }: { product: typeof merch[0], onClose
                {product.name}
              </h2>
              <div className="flex items-end gap-2 mb-16">
-               <span className="font-mono text-3xl tracking-widest text-bone">${product.price}</span>
+               <span className="font-mono text-3xl tracking-widest text-bone">${formatPrice(price)}</span>
                <span className="font-mono text-xs tracking-widest text-bone/50 pb-1">AUD</span>
              </div>
 
@@ -97,15 +101,54 @@ function ProductDetail({ product, onClose }: { product: typeof merch[0], onClose
                {product.details}
              </p>
 
-             <button className="group relative w-full inline-flex items-center justify-between px-8 py-6 bg-transparent border border-bone/20 hover:border-copper transition-colors duration-700 overflow-hidden">
-                <div className="absolute inset-0 bg-copper translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" />
-                <span className="relative z-10 font-mono text-xs tracking-[0.4em] uppercase text-bone group-hover:text-pit-black transition-colors duration-500">
-                  Acquire Artifact
-                </span>
-                <svg className="relative z-10 w-4 h-4 text-bone group-hover:text-pit-black transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                   <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={1} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-             </button>
+             {/* Sizes or other options, only when Shopify has more than one */}
+             {buy.variants.length > 1 && (
+               <div className="flex flex-wrap gap-3 mb-8">
+                 {buy.variants.map((v) => (
+                   <button
+                     key={v.id}
+                     onClick={() => buy.selectVariant(v.id)}
+                     disabled={!v.available}
+                     className={`min-w-[3.5rem] px-4 py-3 border font-mono text-xs tracking-[0.2em] uppercase transition-colors duration-500 ${
+                       v.id === buy.variantId
+                         ? 'border-copper text-copper'
+                         : v.available
+                           ? 'border-bone/20 text-bone/70 hover:border-bone/60'
+                           : 'border-bone/10 text-bone/20 line-through cursor-not-allowed'
+                     }`}
+                   >
+                     {v.title}
+                   </button>
+                 ))}
+               </div>
+             )}
+
+             {buy.disabled ? (
+               <button
+                 disabled
+                 className="relative w-full inline-flex items-center justify-between px-8 py-6 bg-transparent border border-bone/10 cursor-not-allowed"
+               >
+                 <span className="font-mono text-xs tracking-[0.4em] uppercase text-bone/40">
+                   {buy.label}
+                 </span>
+               </button>
+             ) : (
+               <button
+                 onClick={buy.acquire}
+                 className="group relative w-full inline-flex items-center justify-between px-8 py-6 bg-transparent border border-bone/20 hover:border-copper transition-colors duration-700 overflow-hidden"
+               >
+                  <div className="absolute inset-0 bg-copper translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+                  <span className="relative z-10 font-mono text-xs tracking-[0.4em] uppercase text-bone group-hover:text-pit-black transition-colors duration-500">
+                    {buy.label}
+                  </span>
+                  <svg className="relative z-10 w-4 h-4 text-bone group-hover:text-pit-black transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                     <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={1} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+               </button>
+             )}
+             {buy.error && (
+               <p className="mt-4 font-mono text-[10px] tracking-widest uppercase text-ember" role="alert">{buy.error}</p>
+             )}
            </motion.div>
         </div>
       </div>
@@ -115,6 +158,12 @@ function ProductDetail({ product, onClose }: { product: typeof merch[0], onClose
 
 export function Shop() {
   const [selectedProduct, setSelectedProduct] = useState<typeof merch[0] | null>(null);
+  const { catalogue, loaded } = useCatalogue(merch.map((m) => m.handle));
+  // The price Shopify will charge, once the product is in Shopify; the sample price until then
+  const listPrice = (item: typeof merch[0]) => {
+    const live = catalogue[item.handle];
+    return live ? Math.min(...live.variants.map((v) => v.price)) : item.price;
+  };
 
   return (
     <div className="w-full bg-pit-black min-h-screen text-bone relative pt-32 pb-40">
@@ -187,7 +236,7 @@ export function Shop() {
                     </p>
                     
                     <div className="font-mono text-2xl tracking-widest text-bone">
-                       ${item.price} <span className="text-xs text-bone/50">AUD</span>
+                       ${formatPrice(listPrice(item))} <span className="text-xs text-bone/50">AUD</span>
                     </div>
                  </div>
                </motion.div>
@@ -200,6 +249,8 @@ export function Shop() {
         {selectedProduct && (
           <ProductDetail 
             product={selectedProduct} 
+            live={catalogue[selectedProduct.handle]}
+            loaded={loaded}
             onClose={() => setSelectedProduct(null)} 
           />
         )}

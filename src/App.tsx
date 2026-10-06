@@ -36,7 +36,10 @@ function PageTransition({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
       initial={{ opacity: 0, filter: 'blur(10px)' }}
-      animate={{ opacity: 1, filter: 'blur(0px)' }}
+      // 'blur(0px)' still counts as a filter, and any filter turns every position:fixed child
+      // into a position:absolute one. transitionEnd clears it once the page has settled, so
+      // pinned elements (the stone on its detail page, the examination room) stay pinned.
+      animate={{ opacity: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
       exit={{ opacity: 0, filter: 'blur(10px)' }}
       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
       className="w-full h-full"
