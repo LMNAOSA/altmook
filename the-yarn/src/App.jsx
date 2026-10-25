@@ -129,6 +129,7 @@ export default function App() {
 
   function stopPlayer() {
     speechVersionRef.current += 1;
+    setAudioBusy(false);
     if (playerRef.current) { playerRef.current.pause(); playerRef.current = null; }
     if (audioUrlRef.current) { URL.revokeObjectURL(audioUrlRef.current); audioUrlRef.current = ''; }
     setPlaying(false);
@@ -348,7 +349,7 @@ export default function App() {
   }
 
   function finish() {
-    if (stage === 'recording' || stage === 'transcribing') return;
+    if (stage === 'recording' || stage === 'transcribing' || stage === 'thinking') return;
     if (pendingAudio || stage === 'review') {
       setError('Finish and save this answer before ending the session.');
       return;
@@ -427,7 +428,7 @@ export default function App() {
         {auth === 'signed-in'
           ? <div className="header-actions">
               {phase !== 'intro' && startedAt && <button className="top-link" onClick={exportSession} disabled={exporting || stage === 'recording' || stage === 'transcribing' || Boolean(pendingAudio)} title="Download interview ZIP"><Download size={15}/><span>Export</span></button>}
-              <button className="top-link" onClick={logout} title="Sign out"><LockKeyhole size={15}/><span>Lock</span></button>
+              <button className="top-link" onClick={logout} disabled={stage === 'recording' || stage === 'transcribing' || Boolean(pendingAudio)} title="Sign out"><LockKeyhole size={15}/><span>Lock</span></button>
             </div>
           : <div className="workspace-label subtle">INVITE ONLY</div>}
       </header>
@@ -526,7 +527,7 @@ export default function App() {
         </div>
         {error && <div className="note error" role="alert">{error}</div>}
         <div className="session-footer">
-          <button className="text-btn" onClick={finish} disabled={stage === 'recording' || stage === 'transcribing'}><Square size={13}/> Finish this session</button>
+          <button className="text-btn" onClick={finish} disabled={stage === 'recording' || stage === 'transcribing' || stage === 'thinking'}><Square size={13}/> Finish this session</button>
           {count > 0 && <button className="text-btn" onClick={exportSession} disabled={exporting || stage === 'recording' || stage === 'transcribing' || Boolean(pendingAudio)}><Download size={16}/>{exporting ? 'Packaging...' : 'Save what we have'}</button>}
         </div>
       </section> : <section className="content-col done-screen">
