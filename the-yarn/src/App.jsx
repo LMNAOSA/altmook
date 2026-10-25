@@ -186,6 +186,7 @@ export default function App() {
 
   async function nextQuestion(history = [], skip = false) {
     setStage('thinking');
+    setQuestion('');
     setError('');
     setVoiceHint('');
     try {
@@ -348,6 +349,10 @@ export default function App() {
 
   function finish() {
     if (stage === 'recording' || stage === 'transcribing') return;
+    if (pendingAudio || stage === 'review') {
+      setError('Finish and save this answer before ending the session.');
+      return;
+    }
     stopPlayer();
     setPhase('done');
     setError('');
@@ -355,6 +360,10 @@ export default function App() {
 
   async function exportSession() {
     if (!startedAt) return;
+    if (pendingAudio || stage === 'recording' || stage === 'transcribing') {
+      setError('Finish the current answer before exporting, so its recording is included.');
+      return;
+    }
     setExporting(true);
     setError('');
     try {
@@ -417,7 +426,7 @@ export default function App() {
         <div className="workspace-label"><span className="tiny-dot" /> THE YARN <span className="mobile-secondary">/ PRIVATE STUDIO</span></div>
         {auth === 'signed-in'
           ? <div className="header-actions">
-              {phase !== 'intro' && startedAt && <button className="top-link" onClick={exportSession} disabled={exporting || stage === 'recording'} title="Download interview ZIP"><Download size={15}/><span>Export</span></button>}
+              {phase !== 'intro' && startedAt && <button className="top-link" onClick={exportSession} disabled={exporting || stage === 'recording' || stage === 'transcribing' || Boolean(pendingAudio)} title="Download interview ZIP"><Download size={15}/><span>Export</span></button>}
               <button className="top-link" onClick={logout} title="Sign out"><LockKeyhole size={15}/><span>Lock</span></button>
             </div>
           : <div className="workspace-label subtle">INVITE ONLY</div>}
@@ -466,7 +475,8 @@ export default function App() {
           <div className="question-label"><span className="line-dash"/> CURRENT QUESTION</div>
           {stage === 'thinking' && !question
             ? <h2 className="question waiting">Getting a good one...</h2>
-            : <h2 className="question">{question || 'Something good is coming...'}</h2>}
+            : <h2 className="question">{question || 'We lost that question. Give it another go.'}</h2>}
+          {stage === 'ready' && !question && <button className="outline-btn" onClick={() => nextQuestion(makeHistory(entriesRef.current))}>Try that question again <RotateCcw size={16}/></button>}
           <div className="question-actions">
             <button className="text-btn" onClick={replay} disabled={!voiceEnabled || !question || audioBusy || stage === 'recording' || stage === 'transcribing'}><Volume2 size={17}/>{audioBusy ? 'Finding your voice...' : playing ? 'Play again' : 'Listen to question'}</button>
             <button className="text-btn" onClick={skip} disabled={stage !== 'ready' || !question}><SkipForward size={16}/> Different question</button>
@@ -517,7 +527,7 @@ export default function App() {
         {error && <div className="note error" role="alert">{error}</div>}
         <div className="session-footer">
           <button className="text-btn" onClick={finish} disabled={stage === 'recording' || stage === 'transcribing'}><Square size={13}/> Finish this session</button>
-          {count > 0 && <button className="text-btn" onClick={exportSession} disabled={exporting || stage === 'recording'}><Download size={16}/>{exporting ? 'Packaging...' : 'Save what we have'}</button>}
+          {count > 0 && <button className="text-btn" onClick={exportSession} disabled={exporting || stage === 'recording' || stage === 'transcribing' || Boolean(pendingAudio)}><Download size={16}/>{exporting ? 'Packaging...' : 'Save what we have'}</button>}
         </div>
       </section> : <section className="content-col done-screen">
         <div className="finish-stamp"><Check size={30}/></div>
