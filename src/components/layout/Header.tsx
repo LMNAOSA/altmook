@@ -23,7 +23,7 @@ export function Header() {
     { name: 'OPAL', path: '/opal' },
     { name: 'ANDAMOOKA', path: '/andamooka' },
     { name: 'THE PEOPLE', path: '/people' },
-    { name: 'WORKSHOP', path: '/workshop' },
+    { name: 'THE SHED', path: '/workshop' },
     { name: 'PROVENANCE', path: '/provenance' },
     { name: 'JOURNAL', path: '/journal' },
     { name: 'SHOP', path: '/shop' },

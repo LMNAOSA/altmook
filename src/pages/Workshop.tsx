@@ -1,5 +1,8 @@
-import { useRef } from 'react';
+import { lazy, Suspense, useRef } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+
+// The educational lab loads independently of the existing workshop content.
+const OpalColourLab = lazy(() => import('../components/shed/OpalColourLab').then((mod) => ({ default: mod.OpalColourLab })));
 
 function UVRevealText() {
   const ref = useRef(null);
@@ -56,7 +59,7 @@ export function Workshop() {
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
             className="font-display text-6xl md:text-8xl xl:text-[10rem] text-bone leading-[0.85] tracking-tight uppercase"
           >
-            THE WORKSHOP
+            THE SHED
           </motion.h1>
         </div>
       </section>
@@ -93,6 +96,11 @@ export function Workshop() {
           </div>
         </div>
       </section>
+
+      {/* WHY PRECIOUS OPAL FLASHES — teaching belongs in The Shed, not the showroom. */}
+      <Suspense fallback={<div className="mx-auto max-w-[1540px] px-6 py-24 text-sm text-bone/60" role="status">Loading the colour lab…</div>}>
+        <OpalColourLab />
+      </Suspense>
 
       {/* THE BLADE & THE WHEEL */}
       <section className="py-40 px-6 lg:px-12 max-w-[1600px] mx-auto border-t border-bone/5">
